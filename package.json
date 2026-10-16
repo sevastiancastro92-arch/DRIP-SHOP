@@ -1,0 +1,12 @@
+{
+  "name": "drip-reset-key-system",
+  "version": "1.0.0",
+  "description": "Sistema de reset key con cooldown de Firebase",
+  "main": "api/reset.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "firebase": "^10.12.0"
+  }
+}
