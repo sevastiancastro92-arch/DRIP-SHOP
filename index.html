@@ -39,7 +39,7 @@
                 <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Variant ID: 9</span>
                 <h3 class="font-bold mt-2 text-sm">Licencia Premium (Opción A)</h3>
                 <p class="text-xs text-gray-400 mt-1">Generación automática de clave.</p>
-                <button onclick="comprarKey(9)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
+                <button onclick="comprarKey(9, this)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
                     <i class="fas fa-bolt mr-1"></i> Comprar Key
                 </button>
             </div>
@@ -48,7 +48,7 @@
                 <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Variant ID: 76</span>
                 <h3 class="font-bold mt-2 text-sm">Licencia VIP (Opción B)</h3>
                 <p class="text-xs text-gray-400 mt-1">Generación automática de clave.</p>
-                <button onclick="comprarKey(76)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
+                <button onclick="comprarKey(76, this)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
                     <i class="fas fa-bolt mr-1"></i> Comprar Key
                 </button>
             </div>
@@ -63,7 +63,8 @@
 
     <!-- Footer -->
     <footer class="text-center text-[10px] text-gray-500 p-4 border-t border-purple-900/20">
-        NØXAR Mods &copy; 2026 — Todos los derechos reservados.
+        <span>NØXAR Mods &copy; 2026 — Todos los derechos reservados.</span>
+        <a href="/admin.html" class="ml-3 text-purple-300/60 hover:text-purple-200">Administración</a>
     </footer>
 
     <script type="module">
@@ -87,17 +88,19 @@
 
         let currentUser = null;
 
+        async function refreshBalance() {
+            if (!currentUser) return;
+            const snapshot = await get(ref(db, 'users/' + currentUser.uid));
+            const balance = Number(snapshot.val()?.balance || 0);
+            document.getElementById('user-balance').innerText = `$${balance.toFixed(2)}`;
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
             } else {
                 currentUser = user;
-                const userRef = ref(db, 'users/' + user.uid);
-                const snapshot = await get(userRef);
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    document.getElementById('user-balance').innerText = `$${userData.balance || 0.00}`;
-                }
+                await refreshBalance();
             }
         });
 
@@ -105,17 +108,24 @@
             signOut(auth).then(() => { window.location.href = 'login.html'; });
         });
 
-        window.comprarKey = async function(variantId) {
-            const btn = event.target;
+        window.comprarKey = async function(variantId, btn) {
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Procesando...';
             btn.disabled = true;
 
             try {
+                const idToken = await currentUser.getIdToken();
                 const res = await fetch('/api/generate', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ variant_id: variantId, quantity: 1, uid: currentUser.uid })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ variant_id: variantId, quantity: 1 })
                 });
 
                 const data = await res.json();
@@ -123,10 +133,16 @@
                 const box = document.getElementById('keys-box');
 
                 if (data.success !== false && data.keys) {
-                    box.innerHTML = data.keys.map(k => `<div>🔑 ${k}</div>`).join('');
+                    box.replaceChildren(...data.keys.map((key) => {
+                        const line = document.createElement('div');
+                        line.textContent = `🔑 ${key}`;
+                        return line;
+                    }));
                     container.classList.remove('hidden');
+                    refreshBalance().catch((error) => console.error('No se pudo refrescar el saldo mostrado', error));
                 } else {
-                    alert('Error: ' + (data.error || 'No se pudo generar la key'));
+                    const followUp = data.order_id ? ` Referencia: ${data.order_id}. No repitas la compra hasta revisar esta orden.` : '';
+                    alert((data.error || 'No se pudo generar la key') + followUp);
                 }
             } catch (e) {
                 alert('Error de red al conectar con el servidor.');

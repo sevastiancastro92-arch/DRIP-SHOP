@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Administración — NØXAR STORE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="min-h-screen bg-[#080510] text-[#f3f1fa] selection:bg-fuchsia-500/40">
+    <div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <div class="absolute -top-48 right-[-8rem] h-[28rem] w-[28rem] rounded-full bg-fuchsia-700/15 blur-[120px]"></div>
+        <div class="absolute bottom-[-15rem] left-[-10rem] h-[28rem] w-[28rem] rounded-full bg-violet-700/15 blur-[120px]"></div>
+    </div>
+
+    <header class="relative border-b border-white/10 bg-[#0e0825]/75 backdrop-blur-xl">
+        <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+            <a href="/index.html" class="flex items-center gap-3" aria-label="Volver a NØXAR Store">
+                <span class="grid h-10 w-10 place-items-center rounded-xl border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300"><i class="fa-solid fa-cube"></i></span>
+                <span><span class="block text-sm font-black tracking-[.18em]">NØXAR <span class="text-fuchsia-300">STORE</span></span><span class="mt-0.5 block text-[10px] uppercase tracking-[.2em] text-white/40">Consola privada</span></span>
+            </a>
+            <a href="/index.html" class="text-xs text-white/55 transition hover:text-white"><i class="fa-solid fa-arrow-left mr-2"></i>Volver a la tienda</a>
+        </div>
+    </header>
+
+    <main class="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-10 sm:py-14">
+        <section id="login-view" class="mx-auto my-auto w-full max-w-md rounded-3xl border border-white/10 bg-[#120c24]/85 p-7 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-9">
+            <div class="mb-8">
+                <p class="mb-3 text-[10px] font-bold uppercase tracking-[.24em] text-fuchsia-300">Acceso restringido</p>
+                <h1 class="text-2xl font-black tracking-tight">Panel de administración</h1>
+                <p class="mt-2 text-sm leading-6 text-white/50">Introduce la contraseña privada para administrar los precios de venta.</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <label for="admin-password" class="block text-xs font-semibold text-white/70">Contraseña</label>
+                <input id="admin-password" type="password" autocomplete="current-password" required maxlength="256" class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none transition placeholder:text-white/25 focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-500/15" placeholder="Contraseña privada">
+                <button id="login-button" class="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-3 text-sm font-bold shadow-lg shadow-fuchsia-950/30 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60" type="submit">Entrar al panel</button>
+                <p id="login-error" class="hidden rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200" role="alert"></p>
+            </form>
+            <p class="mt-7 border-t border-white/8 pt-5 text-[11px] leading-5 text-white/35"><i class="fa-solid fa-shield-halved mr-2 text-emerald-300/70"></i>La contraseña se valida en el servidor y no se guarda en esta página.</p>
+        </section>
+
+        <section id="dashboard-view" class="hidden w-full">
+            <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <p class="mb-2 text-[10px] font-bold uppercase tracking-[.24em] text-fuchsia-300">Catálogo · precios</p>
+                    <h1 class="text-3xl font-black tracking-tight sm:text-4xl">Precios de venta</h1>
+                    <p class="mt-2 max-w-xl text-sm leading-6 text-white/50">Define el precio final de cada variante. La compra solo se procesa si el saldo del cliente cubre el total.</p>
+                </div>
+                <button id="logout-button" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-white/65 transition hover:border-white/20 hover:text-white"><i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>Cerrar sesión</button>
+            </div>
+
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/[.05] px-4 py-3 text-xs leading-5 text-amber-100/75">
+                <span><i class="fa-solid fa-circle-info mr-2 text-amber-200/80"></i>Guarda precios positivos con hasta dos decimales. Las variantes sin precio quedan desactivadas.</span>
+                <span class="rounded-full border border-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/50">Moneda según configuración de la tienda</span>
+            </div>
+
+            <form id="prices-form" class="space-y-3">
+                <div id="price-list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+                <div class="sticky bottom-4 z-10 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#100a20]/95 p-4 shadow-xl shadow-black/30 backdrop-blur-xl">
+                    <p id="save-status" class="text-xs text-white/45" aria-live="polite">Los cambios se guardan en la base de datos segura.</p>
+                    <button id="save-button" type="submit" class="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 text-xs font-bold shadow-lg shadow-fuchsia-950/25 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar precios</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script type="module">
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const loginError = document.getElementById('login-error');
+        const loginButton = document.getElementById('login-button');
+        const saveButton = document.getElementById('save-button');
+        const saveStatus = document.getElementById('save-status');
+        const priceList = document.getElementById('price-list');
+        let allowedVariantIds = [];
+
+        async function api(path, options = {}) {
+            const response = await fetch(path, {
+                credentials: 'same-origin',
+                ...options,
+                headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const error = new Error(data.error || 'No se pudo completar la solicitud');
+                error.status = response.status;
+                throw error;
+            }
+            return data;
+        }
+
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.classList.remove('hidden');
+        }
+
+        function renderPrices(salePrices) {
+            priceList.replaceChildren();
+            for (const variantId of allowedVariantIds) {
+                const card = document.createElement('label');
+                card.className = 'group rounded-2xl border border-white/10 bg-[#120c24]/75 p-4 transition hover:border-fuchsia-400/25';
+                const head = document.createElement('span');
+                head.className = 'flex items-center justify-between gap-2';
+                const name = document.createElement('span');
+                name.className = 'text-sm font-bold text-white/90';
+                name.textContent = `Variante ${variantId}`;
+                const badge = document.createElement('span');
+                badge.className = 'rounded-full border border-white/10 bg-black/20 px-2 py-1 font-mono text-[10px] text-white/40';
+                badge.textContent = `ID ${variantId}`;
+                head.append(name, badge);
+                const priceLabel = document.createElement('span');
+                priceLabel.className = 'mt-5 block text-[10px] font-bold uppercase tracking-[.18em] text-white/40';
+                priceLabel.textContent = 'Precio final';
+                const price = document.createElement('input');
+                price.type = 'number';
+                price.name = String(variantId);
+                price.min = '0.01';
+                price.max = '1000000';
+                price.step = '0.01';
+                price.inputMode = 'decimal';
+                price.value = salePrices?.[variantId] ?? '';
+                price.placeholder = 'Configura el precio';
+                price.required = false;
+                price.className = 'mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm font-semibold outline-none transition placeholder:text-white/25 focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-500/15';
+                const helper = document.createElement('span');
+                helper.className = 'mt-2 block text-[10px] text-white/35';
+                helper.textContent = price.value ? 'Activo · listo para vender' : 'Sin precio · no disponible para compra';
+                price.addEventListener('input', () => {
+                    helper.textContent = price.value ? 'Pendiente de guardar' : 'Sin precio · no disponible para compra';
+                    helper.className = `mt-2 block text-[10px] ${price.value ? 'text-fuchsia-200/60' : 'text-white/35'}`;
+                });
+                card.append(head, priceLabel, price, helper);
+                priceList.append(card);
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const data = await api('/api/admin/prices');
+                allowedVariantIds = data.allowedVariantIds;
+                renderPrices(data.salePrices);
+                loginView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+            } catch (error) {
+                if (error.status !== 401) showLoginError(error.message);
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            loginError.classList.add('hidden');
+            loginButton.disabled = true;
+            loginButton.textContent = 'Verificando…';
+            try {
+                const password = document.getElementById('admin-password').value;
+                await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) });
+                document.getElementById('admin-password').value = '';
+                await loadDashboard();
+            } catch (error) {
+                showLoginError(error.message);
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Entrar al panel';
+            }
+        });
+
+        document.getElementById('prices-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            saveButton.disabled = true;
+            saveStatus.textContent = 'Guardando…';
+            try {
+                const form = new FormData(event.currentTarget);
+                const prices = Object.fromEntries([...form.entries()]
+                    .filter(([, value]) => String(value).trim() !== '')
+                    .map(([id, value]) => [id, Number(value)]));
+                await api('/api/admin/prices', { method: 'PUT', body: JSON.stringify({ prices }) });
+                saveStatus.textContent = 'Precios guardados correctamente.';
+                saveStatus.className = 'text-xs text-emerald-200/80';
+                await loadDashboard();
+            } catch (error) {
+                saveStatus.textContent = error.message;
+                saveStatus.className = 'text-xs text-rose-200';
+                if (error.status === 401) {
+                    dashboardView.classList.add('hidden');
+                    loginView.classList.remove('hidden');
+                }
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+
+        document.getElementById('logout-button').addEventListener('click', async () => {
+            await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+            dashboardView.classList.add('hidden');
+            loginView.classList.remove('hidden');
+        });
+
+        loadDashboard();
+    </script>
+</body>
+</html>

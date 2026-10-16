@@ -78,7 +78,7 @@
                 if (isRegistering) {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     await set(ref(db, 'users/' + userCredential.user.uid), {
-                        email: email,
+                        email: userCredential.user.email || email,
                         balance: 0,
                         role: 'client'
                     });

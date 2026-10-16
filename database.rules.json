@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && !data.exists()",
+        ".validate": "newData.hasChildren(['email', 'balance', 'role']) && newData.numChildren() === 3",
+        "email": {
+          ".validate": "newData.isString() && newData.val() === auth.token.email"
+        },
+        "balance": {
+          ".validate": "newData.isNumber() && newData.val() === 0"
+        },
+        "role": {
+          ".validate": "newData.isString() && newData.val() === 'client'"
+        }
+      }
+    },
+    "store": {
+      ".read": false,
+      ".write": false
+    },
+    "security": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
