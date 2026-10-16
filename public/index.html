@@ -17,16 +17,11 @@
                     animation: {
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'float': 'float 6s ease-in-out infinite',
-                        'scan': 'scan 2s linear infinite',
                     },
                     keyframes: {
                         float: {
                             '0%, 100%': { transform: 'translateY(0px)' },
                             '50%': { transform: 'translateY(-8px)' },
-                        },
-                        scan: {
-                            '0%': { transform: 'translateY(-100%)' },
-                            '100%': { transform: 'translateY(1000%)' },
                         }
                     }
                 }
@@ -35,31 +30,21 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .glow-effect {
-            box-shadow: 0 0 50px -10px rgba(16, 185, 129, 0.15);
-        }
-        .glow-button {
-            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glow-effect { box-shadow: 0 0 50px -10px rgba(16, 185, 129, 0.15); }
+        .glow-button { box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4); }
     </style>
 </head>
 <body class="bg-darker text-slate-100 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 
-    <!-- Fondo con luces ambientales animadas -->
+    <!-- Luces ambientales de fondo -->
     <div class="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
     <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
 
     <div class="max-w-lg w-full relative z-10 animate-float">
-        <!-- Tarjeta Principal -->
         <div class="bg-cardBg/80 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 glow-effect transition-all duration-500">
             
-            <!-- Cabecera -->
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-4 shadow-lg shadow-emerald-500/10">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,10 +54,9 @@
                 <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
                     Portal de Restablecimiento
                 </h1>
-                <p class="text-xs text-slate-400 mt-1.5 font-medium">Sistema automatizado de licencias y HWID</p>
+                <p class="text-xs text-slate-400 mt-1.5 font-medium">Sistema automatizado con límite de 14 horas</p>
             </div>
 
-            <!-- Formulario -->
             <form id="resetForm" class="space-y-5">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
@@ -80,7 +64,7 @@
                     </label>
                     <div class="relative group">
                         <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
-                        <input type="text" id="licenseKey" required placeholder="Ingresa tu key (Ej: 7886...)" 
+                        <input type="text" id="licenseKey" required placeholder="Ingresa tu key..." 
                             class="relative w-full bg-slate-950/90 border border-slate-800 rounded-2xl px-4 py-3.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-all font-mono text-sm tracking-wide">
                     </div>
                 </div>
@@ -93,41 +77,35 @@
                         </svg>
                         <span id="btnText">Ejecutar Reset</span>
                     </span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </button>
             </form>
 
-            <!-- Caja de Resultados (Oculta por defecto con animación de aparición) -->
             <div id="resultBox" class="mt-6 transition-all duration-500 opacity-0 translate-y-2 hidden">
                 <div class="p-4 rounded-2xl border bg-slate-950/80 backdrop-blur relative overflow-hidden" id="resultContainerBorder">
                     
-                    <!-- Barra de estado superior -->
                     <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/80">
                         <div class="flex items-center gap-2">
-                            <span id="statusIndicator" class="w-2.5 h-2.5 rounded-full animate-ping"></span>
+                            <span id="statusIndicator" class="w-2.5 h-2.5 rounded-full"></span>
                             <span id="statusBadge" class="text-xs font-bold uppercase tracking-wider">Procesando</span>
                         </div>
                         <span class="text-[10px] font-mono text-slate-500" id="httpCode">HTTP 200</span>
                     </div>
 
-                    <!-- Contenido de la respuesta en formato estructurado -->
                     <div class="space-y-2 text-xs font-mono">
                         <div>
-                            <span class="text-slate-500 block text-[10px] uppercase">Mensaje del Servidor:</span>
+                            <span class="text-slate-500 block text-[10px] uppercase">Mensaje:</span>
                             <p id="msgText" class="text-slate-200 font-medium mt-0.5 text-sm"></p>
                         </div>
 
-                        <!-- Detalles colapsables o limpios -->
                         <div class="pt-2 border-t border-slate-900 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
                             <div>API: <span id="apiUsed" class="text-slate-200">drip</span></div>
-                            <div>Restets hoy: <span id="resetCount" class="text-slate-200">0</span></div>
+                            <div>Resets hoy: <span id="resetCount" class="text-slate-200">0</span></div>
                         </div>
 
-                        <!-- JSON Raw colapsable -->
                         <div class="mt-3">
                             <details class="group">
-                                <summary class="cursor-pointer text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors select-none flex items-center gap-1">
-                                    <span>Ver respuesta completa (JSON)</span>
+                                <summary class="cursor-pointer text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors select-none">
+                                    Ver respuesta completa (JSON)
                                 </summary>
                                 <pre id="rawJson" class="mt-2 p-3 rounded-xl bg-slate-900 border border-slate-800/60 text-[10px] text-slate-300 overflow-x-auto whitespace-pre-wrap break-all"></pre>
                             </details>
@@ -137,10 +115,8 @@
             </div>
 
         </div>
-
-        <!-- Pie de página discreto -->
         <div class="text-center mt-6">
-            <p class="text-xs text-slate-500 font-medium">Protegido por Drip Security &bull; Powered by Vercel</p>
+            <p class="text-xs text-slate-500 font-medium">NØXAR Security &bull; Powered by Vercel</p>
         </div>
     </div>
 
@@ -161,23 +137,18 @@
             const resetCount = document.getElementById('resetCount');
             const rawJson = document.getElementById('rawJson');
 
-            // Estado de carga en botón
             btn.disabled = true;
-            btnText.textContent = 'Procesando solicitud...';
+            btnText.textContent = 'Procesando...';
             btnIcon.classList.add('animate-spin');
 
-            // Mostrar caja con estado de carga
             resultBox.classList.remove('hidden');
-            setTimeout(() => {
-                resultBox.classList.remove('opacity-0', 'translate-y-2');
-            }, 50);
+            setTimeout(() => resultBox.classList.remove('opacity-0', 'translate-y-2'), 50);
 
             resultBorder.className = "p-4 rounded-2xl border border-amber-500/30 bg-slate-950/80 backdrop-blur relative overflow-hidden";
             statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-            statusBadge.textContent = "Conectando...";
+            statusBadge.textContent = "Verificando Cooldown...";
             statusBadge.className = "text-xs font-bold uppercase tracking-wider text-amber-400";
-            msgText.textContent = "Enviando comando al servidor...";
-            httpCode.textContent = "POST /api/reset";
+            msgText.textContent = "Consultando base de datos de Firebase...";
 
             try {
                 const res = await fetch('/api/reset', {
@@ -187,29 +158,35 @@
                 });
 
                 const result = await res.json();
-                const data = result.data;
-
-                // Evaluamos si fue exitoso o si ya estaba libre (ALREADY_FREE)
-                const isAlreadyFree = data.code === 'ALREADY_FREE' || data.api_response_json?.already_reset;
-                const isSuccess = data.success === true || isAlreadyFree;
+                const data = result.data || {};
 
                 httpCode.textContent = `HTTP ${data.api_http_code || 200}`;
                 apiUsed.textContent = data.api_used || 'drip';
                 resetCount.textContent = data.reset_count_today ?? '0';
-                rawJson.textContent = JSON.stringify(data, null, 2);
+                rawJson.textContent = JSON.stringify(result, null, 2);
 
-                if (isSuccess) {
+                if (result.cooldown) {
+                    // Si está en periodo de espera (Cooldown activo)
+                    resultBorder.className = "p-4 rounded-2xl border border-amber-500/40 bg-slate-950/80 backdrop-blur relative overflow-hidden shadow-lg shadow-amber-950/30";
+                    statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+                    statusBadge.textContent = "Cooldown Activo";
+                    statusBadge.className = "text-xs font-bold uppercase tracking-wider text-amber-400";
+                    msgText.textContent = result.message;
+                } else if (result.success) {
+                    // Éxito o llave ya libre
+                    const isAlreadyFree = data.code === 'ALREADY_FREE' || data.api_response_json?.already_reset;
                     resultBorder.className = "p-4 rounded-2xl border border-emerald-500/40 bg-slate-950/80 backdrop-blur relative overflow-hidden shadow-lg shadow-emerald-950/30";
                     statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-                    statusBadge.textContent = isAlreadyFree ? "Ya Libre (Sin cambios)" : "Restablecido con Éxito";
+                    statusBadge.textContent = isAlreadyFree ? "Ya Libre (Sin Cooldown)" : "Restablecido Exitosamente";
                     statusBadge.className = "text-xs font-bold uppercase tracking-wider text-emerald-400";
-                    msgText.textContent = data.message || data.api_response_json?.message || "Operación procesada correctamente.";
+                    msgText.textContent = result.message || data.message || "Operación procesada correctamente.";
                 } else {
+                    // Error general
                     resultBorder.className = "p-4 rounded-2xl border border-rose-500/40 bg-slate-950/80 backdrop-blur relative overflow-hidden shadow-lg shadow-rose-950/30";
                     statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-rose-400";
-                    statusBadge.textContent = "Error / Bloqueado";
+                    statusBadge.textContent = "Error";
                     statusBadge.className = "text-xs font-bold uppercase tracking-wider text-rose-400";
-                    msgText.textContent = data.message || data.error || "No se pudo procesar la key.";
+                    msgText.textContent = result.message || data.error || "No se pudo procesar la key.";
                 }
 
             } catch (err) {
@@ -217,8 +194,7 @@
                 statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-rose-400";
                 statusBadge.textContent = "Error de Red";
                 statusBadge.className = "text-xs font-bold uppercase tracking-wider text-rose-400";
-                msgText.textContent = "Fallo de conexión con la función serverless de Vercel.";
-                httpCode.textContent = "HTTP 500";
+                msgText.textContent = "Fallo de conexión con el servidor.";
                 rawJson.textContent = err.message;
             } finally {
                 btn.disabled = false;
