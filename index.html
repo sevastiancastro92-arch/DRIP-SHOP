@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NØXAR Store - Tienda de Licencias</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-[#080510] text-[#f3f1fa] min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="border-b border-purple-900/30 bg-[#0e0825]/50 backdrop-blur-md p-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-extrabold bg-gradient-to-r from-white via-purple-300 to-fuchsia-500 bg-clip-text text-transparent">
+                <i class="fas fa-store text-fuchsia-500 mr-2"></i> NØXAR STORE
+            </h1>
+            <div class="flex items-center gap-4">
+                <div class="bg-purple-950/40 border border-purple-900/60 px-3 py-1 rounded-lg text-xs font-mono">
+                    Saldo: <span id="user-balance" class="text-emerald-400 font-bold">$0.00</span>
+                </div>
+                <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 cursor-pointer">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto p-4 w-full flex-grow">
+        <div class="mb-6 text-center">
+            <h2 class="text-2xl font-bold mb-1">Catálogo de Licencias</h2>
+            <p class="text-xs text-purple-300/70">Selecciona el producto que deseas adquirir.</p>
+        </div>
+
+        <!-- Lista de Productos (Variantes) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-purple-950/20 border border-purple-900/40 p-4 rounded-xl">
+                <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Variant ID: 9</span>
+                <h3 class="font-bold mt-2 text-sm">Licencia Premium (Opción A)</h3>
+                <p class="text-xs text-gray-400 mt-1">Generación automática de clave.</p>
+                <button onclick="comprarKey(9)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
+                    <i class="fas fa-bolt mr-1"></i> Comprar Key
+                </button>
+            </div>
+
+            <div class="bg-purple-950/20 border border-purple-900/40 p-4 rounded-xl">
+                <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Variant ID: 76</span>
+                <h3 class="font-bold mt-2 text-sm">Licencia VIP (Opción B)</h3>
+                <p class="text-xs text-gray-400 mt-1">Generación automática de clave.</p>
+                <button onclick="comprarKey(76)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
+                    <i class="fas fa-bolt mr-1"></i> Comprar Key
+                </button>
+            </div>
+        </div>
+
+        <!-- Resultado -->
+        <div id="resultado-container" class="hidden bg-emerald-950/30 border border-emerald-500/40 p-4 rounded-xl">
+            <h3 class="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-2"><i class="fas fa-check-circle mr-1"></i> ¡Key Generada con Éxito!</h3>
+            <div id="keys-box" class="space-y-2 font-mono text-xs bg-black/40 p-3 rounded-lg border border-emerald-500/20 text-emerald-300 select-all"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-[10px] text-gray-500 p-4 border-t border-purple-900/20">
+        NØXAR Mods &copy; 2026 — Todos los derechos reservados.
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCEM7fa1Erl2NLpM8VTRYCVyHW-cl-JEjw",
+          authDomain: "sociosxit-fa932.firebaseapp.com",
+          databaseURL: "https://sociosxit-fa932-default-rtdb.firebaseio.com",
+          projectId: "sociosxit-fa932",
+          storageBucket: "sociosxit-fa932.firebasestorage.app",
+          messagingSenderId: "942961938934",
+          appId: "1:942961938934:web:8f9e5620253d122a9e77d7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                currentUser = user;
+                const userRef = ref(db, 'users/' + user.uid);
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    document.getElementById('user-balance').innerText = `$${userData.balance || 0.00}`;
+                }
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => { window.location.href = 'login.html'; });
+        });
+
+        window.comprarKey = async function(variantId) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Procesando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ variant_id: variantId, quantity: 1, uid: currentUser.uid })
+                });
+
+                const data = await res.json();
+                const container = document.getElementById('resultado-container');
+                const box = document.getElementById('keys-box');
+
+                if (data.success !== false && data.keys) {
+                    box.innerHTML = data.keys.map(k => `<div>🔑 ${k}</div>`).join('');
+                    container.classList.remove('hidden');
+                } else {
+                    alert('Error: ' + (data.error || 'No se pudo generar la key'));
+                }
+            } catch (e) {
+                alert('Error de red al conectar con el servidor.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
