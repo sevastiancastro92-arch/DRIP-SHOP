@@ -1,12 +1,13 @@
 {
-  "name": "drip-reset-key-system",
+  "name": "noxar-store",
   "version": "1.0.0",
-  "description": "Sistema de reset key con cooldown de Firebase",
-  "main": "api/reset.js",
+  "description": "Tienda de llaves digitales automatizada",
+  "main": "index.js",
   "scripts": {
-    "start": "vercel dev"
+    "start": "node server.js"
   },
-  "dependencies": {
-    "firebase": "^10.12.0"
+  "dependencies": {},
+  "engines": {
+    "node": "18.x"
   }
 }
