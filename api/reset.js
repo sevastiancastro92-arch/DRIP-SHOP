@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-    // Permitir solo peticiones POST
     if (req.method !== 'POST') {
         return res.status(405).json({ success: false, message: 'Método no permitido' });
     }
@@ -13,7 +12,6 @@ export default async function handler(req, res) {
     try {
         const apiToken = '90db09800ec2b121bc2fc725f31190f3c49312565909574452e1b0ffa2e6360b';
         
-        // Petición equivalente al cURL
         const params = new URLSearchParams();
         params.append('api', 'drip');
         params.append('key', key);
@@ -27,11 +25,14 @@ export default async function handler(req, res) {
             body: params
         });
 
-        const data = await response.text();
+        const data = await response.json(); // Lo leemos directo como JSON si el servidor lo retorna así
+
+        // Validamos si fue exitoso o si ya estaba libre/reseteado
+        const isSuccess = data.success === true || data.code === 'ALREADY_FREE';
 
         return res.status(200).json({ 
-            success: true, 
-            response: data 
+            success: isSuccess, 
+            data: data 
         });
 
     } catch (error) {
