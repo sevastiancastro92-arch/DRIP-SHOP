@@ -121,6 +121,14 @@
     </div>
 
     <script>
+        // Función auxiliar para reproducir audio
+        function playAudio(filename) {
+            const audio = new Audio('/' + filename);
+            audio.play().catch(err => {
+                console.log('El navegador bloqueó la reproducción automática o no encontró el archivo:', err);
+            });
+        }
+
         document.getElementById('resetForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const keyInput = document.getElementById('licenseKey').value.trim();
@@ -166,22 +174,27 @@
                 rawJson.textContent = JSON.stringify(result, null, 2);
 
                 if (result.cooldown) {
-                    // Si está en periodo de espera (Cooldown activo)
+                    // Cooldown activo -> Sonido de Error
+                    playAudio('ALETERROR.mp3');
                     resultBorder.className = "p-4 rounded-2xl border border-amber-500/40 bg-slate-950/80 backdrop-blur relative overflow-hidden shadow-lg shadow-amber-950/30";
                     statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
                     statusBadge.textContent = "Cooldown Activo";
                     statusBadge.className = "text-xs font-bold uppercase tracking-wider text-amber-400";
                     msgText.textContent = result.message;
+
                 } else if (result.success) {
-                    // Éxito o llave ya libre
+                    // Éxito o llave ya libre -> Sonido Completado
+                    playAudio('copleted.mp3');
                     const isAlreadyFree = data.code === 'ALREADY_FREE' || data.api_response_json?.already_reset;
                     resultBorder.className = "p-4 rounded-2xl border border-emerald-500/40 bg-slate-950/80 backdrop-blur relative overflow-hidden shadow-lg shadow-emerald-950/30";
                     statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
                     statusBadge.textContent = isAlreadyFree ? "Ya Libre (Sin Cooldown)" : "Restablecido Exitosamente";
                     statusBadge.className = "text-xs font-bold uppercase tracking-wider text-emerald-400";
                     msgText.textContent = result.message || data.message || "Operación procesada correctamente.";
+
                 } else {
-                    // Error general
+                    // Error general -> Sonido de Error
+                    playAudio('ALETERROR.mp3');
                     resultBorder.className = "p-4 rounded-2xl border border-rose-500/40 bg-slate-950/80 backdrop-blur relative overflow-hidden shadow-lg shadow-rose-950/30";
                     statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-rose-400";
                     statusBadge.textContent = "Error";
@@ -190,6 +203,8 @@
                 }
 
             } catch (err) {
+                // Error de red -> Sonido de Error
+                playAudio('ALETERROR.mp3');
                 resultBorder.className = "p-4 rounded-2xl border border-rose-500/40 bg-slate-950/80 backdrop-blur relative overflow-hidden";
                 statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-rose-400";
                 statusBadge.textContent = "Error de Red";
