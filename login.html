@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - NØXAR STORE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-[#080510] text-[#f3f1fa] min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-[#0e0825]/80 border border-purple-900/40 p-6 rounded-2xl w-full max-w-md shadow-2xl backdrop-blur-md">
+        <div class="text-center mb-6">
+            <h1 class="text-xl font-extrabold bg-gradient-to-r from-white via-purple-300 to-fuchsia-500 bg-clip-text text-transparent">
+                NØXAR STORE
+            </h1>
+            <p class="text-xs text-purple-300/70 mt-1">Inicia sesión para gestionar tu saldo y comprar keys</p>
+        </div>
+
+        <form id="auth-form" class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-bold text-purple-300 uppercase mb-1">Correo Electrónico</label>
+                <input type="email" id="email" required class="w-full bg-black/40 border border-purple-900/40 rounded-lg p-2.5 text-xs text-white focus:border-fuchsia-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-purple-300 uppercase mb-1">Contraseña</label>
+                <input type="password" id="password" required class="w-full bg-black/40 border border-purple-900/40 rounded-lg p-2.5 text-xs text-white focus:border-fuchsia-500 outline-none">
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg cursor-pointer transition uppercase tracking-wider">
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <button onclick="toggleMode()" id="toggle-link" class="text-xs text-fuchsia-400 hover:underline cursor-pointer">
+                ¿No tienes cuenta? Regístrate aquí
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCEM7fa1Erl2NLpM8VTRYCVyHW-cl-JEjw",
+          authDomain: "sociosxit-fa932.firebaseapp.com",
+          databaseURL: "https://sociosxit-fa932-default-rtdb.firebaseio.com",
+          projectId: "sociosxit-fa932",
+          storageBucket: "sociosxit-fa932.firebasestorage.app",
+          messagingSenderId: "942961938934",
+          appId: "1:942961938934:web:8f9e5620253d122a9e77d7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let isRegistering = false;
+        window.toggleMode = function() {
+            isRegistering = !isRegistering;
+            document.getElementById('submit-btn').innerText = isRegistering ? "Registrarse" : "Iniciar Sesión";
+            document.getElementById('toggle-link').innerText = isRegistering ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate aquí";
+        }
+
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('submit-btn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Procesando...';
+
+            try {
+                if (isRegistering) {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await set(ref(db, 'users/' + userCredential.user.uid), {
+                        email: email,
+                        balance: 0,
+                        role: 'client'
+                    });
+                    alert('¡Cuenta creada con éxito!');
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+                window.location.href = 'index.html';
+            } catch (error) {
+                alert('Error: ' + error.message);
+                btn.disabled = false;
+                btn.innerText = isRegistering ? "Registrarse" : "Iniciar Sesión";
+            }
+        });
+    </script>
+</body>
+</html>
