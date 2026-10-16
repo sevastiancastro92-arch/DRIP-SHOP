@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, set } from "firebase/database";
 
-// Configuración de Firebase provista
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCEM7fa1Erl2NLpM8VTRYCVyHW-cl-JEjw",
   authDomain: "sociosxit-fa932.firebaseapp.com",
@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:942961938934:web:8f9e5620253d122a9e77d7"
 };
 
-// Inicializar Firebase en el entorno Serverless de Vercel
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, message: 'Ingresa una key válida' });
     }
 
-    // Limpiamos la key para usarla como clave segura en la base de datos (reemplazando caracteres especiales si los hubiera)
+    // Sanitizamos la key para que sea una ruta segura en Firebase
     const sanitizedKey = key.replace(/[.#$[\]/]/g, '_');
     const cooldownRef = ref(db, `resets_cooldown/${sanitizedKey}`);
 
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
         const COOL_DOWN_HOURS = 14;
         const COOL_DOWN_MS = COOL_DOWN_HOURS * 60 * 60 * 1000;
 
-        // 1. Verificar el último registro en Firebase
+        // 1. Verificar el último registro en Firebase (Cooldown de 14 horas)
         const snapshot = await get(cooldownRef);
         if (snapshot.exists()) {
             const lastResetTime = snapshot.val().lastReset;
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
             }
         }
 
-        // 2. Si pasó el cooldown, procedemos a consumir la API de Drip
+        // 2. Si pasó el cooldown, consumimos la API externa de Drip
         const apiToken = '90db09800ec2b121bc2fc725f31190f3c49312565909574452e1b0ffa2e6360b';
         
         const params = new URLSearchParams();
@@ -77,7 +77,7 @@ export default async function handler(req, res) {
 
         const data = await apiResponse.json();
 
-        // Consideramos exitoso si la API responde bien o si ya estaba libre (ALREADY_FREE)
+        // Consideramos exitoso si la API responde correctamente o si ya estaba libre (ALREADY_FREE)
         const isSuccess = data.success === true || data.code === 'ALREADY_FREE';
 
         if (isSuccess) {
