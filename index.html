@@ -33,26 +33,8 @@
             <p class="text-xs text-purple-300/70">Selecciona el producto que deseas adquirir.</p>
         </div>
 
-        <!-- Lista de Productos (Variantes) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div class="bg-purple-950/20 border border-purple-900/40 p-4 rounded-xl">
-                <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Variant ID: 9</span>
-                <h3 class="font-bold mt-2 text-sm">Licencia Premium (Opción A)</h3>
-                <p class="text-xs text-gray-400 mt-1">Generación automática de clave.</p>
-                <button onclick="comprarKey(9, this)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
-                    <i class="fas fa-bolt mr-1"></i> Comprar Key
-                </button>
-            </div>
-
-            <div class="bg-purple-950/20 border border-purple-900/40 p-4 rounded-xl">
-                <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Variant ID: 76</span>
-                <h3 class="font-bold mt-2 text-sm">Licencia VIP (Opción B)</h3>
-                <p class="text-xs text-gray-400 mt-1">Generación automática de clave.</p>
-                <button onclick="comprarKey(76, this)" class="mt-4 w-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 text-white font-bold text-xs py-2 rounded-lg shadow-lg cursor-pointer transition">
-                    <i class="fas fa-bolt mr-1"></i> Comprar Key
-                </button>
-            </div>
-        </div>
+        <p id="catalog-status" class="mb-3 text-center text-xs text-purple-200/60" aria-live="polite">Cargando variantes y precios…</p>
+        <div id="product-list" class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
 
         <!-- Resultado -->
         <div id="resultado-container" class="hidden bg-emerald-950/30 border border-emerald-500/40 p-4 rounded-xl">
@@ -85,6 +67,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        const variantIds = [9, 76, 10, 11, 12, 182, 184, 181, 183, 217, 13, 14, 15];
 
         let currentUser = null;
 
@@ -93,6 +76,47 @@
             const snapshot = await get(ref(db, 'users/' + currentUser.uid));
             const balance = Number(snapshot.val()?.balance || 0);
             document.getElementById('user-balance').innerText = `$${balance.toFixed(2)}`;
+        }
+
+        async function loadCatalog() {
+            const status = document.getElementById('catalog-status');
+            const list = document.getElementById('product-list');
+            try {
+                const response = await fetch('/api/prices', { cache: 'no-store' });
+                const data = await response.json();
+                if (!response.ok || data.success === false) throw new Error(data.error || 'Precios no disponibles');
+                list.replaceChildren();
+                for (const variantId of variantIds) {
+                    const salePrice = Number(data.salePrices?.[variantId]);
+                    const hasPrice = Number.isFinite(salePrice) && salePrice > 0;
+                    const card = document.createElement('article');
+                    card.className = 'rounded-xl border border-purple-900/40 bg-purple-950/20 p-4 transition hover:border-fuchsia-500/40';
+                    const badge = document.createElement('span');
+                    badge.className = 'rounded bg-purple-500/20 px-2 py-1 font-mono text-[10px] text-purple-200';
+                    badge.textContent = `Variant ID: ${variantId}`;
+                    const title = document.createElement('h3');
+                    title.className = 'mt-3 text-sm font-bold';
+                    title.textContent = `Variante ${variantId}`;
+                    const description = document.createElement('p');
+                    description.className = 'mt-1 text-xs text-gray-400';
+                    description.textContent = 'Key digital · prueba de catálogo';
+                    const price = document.createElement('p');
+                    price.className = 'mt-4 text-lg font-extrabold text-white';
+                    price.textContent = hasPrice ? `$${salePrice.toFixed(2)}` : 'Precio pendiente';
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.disabled = !hasPrice;
+                    button.className = 'mt-3 w-full rounded-lg bg-gradient-to-r from-purple-700 to-fuchsia-600 py-2.5 text-xs font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40';
+                    button.innerHTML = hasPrice ? '<i class="fas fa-bolt mr-1"></i> Comprar Key' : 'Configurar precio en admin';
+                    button.addEventListener('click', () => window.comprarKey(variantId, button));
+                    card.append(badge, title, description, price, button);
+                    list.append(card);
+                }
+                status.textContent = '13 variantes de prueba · nombres reales pendientes del catálogo del proveedor';
+            } catch (error) {
+                status.textContent = 'No se pudieron cargar los precios. Reintenta al actualizar la página.';
+                console.error('No se pudo cargar el catálogo de precios', error);
+            }
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -107,6 +131,8 @@
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => { window.location.href = 'login.html'; });
         });
+
+        loadCatalog();
 
         window.comprarKey = async function(variantId, btn) {
             if (!currentUser) {

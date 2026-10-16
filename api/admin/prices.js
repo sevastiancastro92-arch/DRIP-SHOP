@@ -29,8 +29,6 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, error: 'Envía al menos un precio válido' });
         }
         const updates = {};
-        const auditUpdates = {};
-        const changedAt = Date.now();
         for (const [rawId, rawPrice] of Object.entries(prices)) {
             const id = Number(rawId);
             const price = parseSalePrice(rawPrice);
@@ -38,9 +36,8 @@ export default async function handler(req, res) {
                 return res.status(400).json({ success: false, error: 'Hay una variante no permitida o un precio inválido' });
             }
             updates[`store/salePrices/${id}`] = price;
-            auditUpdates[`store/priceAudit/${changedAt}_${id}`] = { variantId: id, salePrice: price, changedAt };
         }
-        await db.ref().update({ ...updates, ...auditUpdates });
+        await db.ref().update(updates);
         return res.status(200).json({ success: true, saved: Object.keys(prices).length });
     } catch (error) {
         console.error('No se pudieron cargar o guardar los precios de tienda', error);
